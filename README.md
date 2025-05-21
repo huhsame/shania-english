@@ -40,6 +40,10 @@ DB_USERNAME=your_db_user
 DB_PASSWORD=your_db_password
 DB_DATABASE=shania_english_db
 PORT=3000
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+JWT_SECRET=your_jwt_secret
+FRONTEND_URL=http://localhost:3001
 ```
 
 3. `frontend/.env`:
@@ -47,6 +51,41 @@ PORT=3000
 NEXT_PUBLIC_API_URL=http://localhost:3000
 PORT=3001
 ```
+
+## Google OAuth 인증 흐름
+
+이 프로젝트는 Google OAuth를 통한 인증 및 JWT 기반 인증을 지원합니다.
+
+### 설정 방법
+
+1. [Google Cloud Console](https://console.cloud.google.com/)에서 프로젝트를 생성합니다.
+2. OAuth 클라이언트 ID를 생성합니다:
+   - 승인된 리디렉션 URI: `http://localhost:3000/auth/google/redirect`
+   - 받은 클라이언트 ID와 비밀키를 `backend/.env` 파일에 설정합니다.
+3. JWT 비밀키 생성:
+   ```bash
+   openssl rand -hex 32
+   ```
+   생성된 값을 `backend/.env`의 `JWT_SECRET`에 설정합니다.
+
+### 인증 흐름
+
+1. 사용자가 프론트엔드에서 "Google로 로그인" 버튼을 클릭합니다.
+2. 프론트엔드는 백엔드 `/auth/google` 엔드포인트로 리디렉션합니다.
+3. 백엔드는 Passport.js를 사용하여 Google OAuth 인증 페이지로 리디렉션합니다.
+4. 사용자가 Google 계정으로 로그인하면 Google은 백엔드의 콜백 URL `/auth/google/redirect`로 리디렉션합니다.
+5. 백엔드는 사용자 정보를 처리하고:
+   - 기존 사용자가 있는지 확인하거나 새 사용자를 생성합니다.
+   - JWT 토큰을 생성합니다.
+   - 프론트엔드의 콜백 페이지 `/auth/callback`으로 JWT 토큰과 함께 리디렉션합니다.
+6. 프론트엔드는 JWT 토큰을 로컬 스토리지에 저장하고 사용자를 인증된 상태로 처리합니다.
+7. 이후 모든 API 요청은 `Authorization: Bearer <token>` 헤더와 함께 전송됩니다.
+
+### 인증 엔드포인트
+
+- `GET /auth/google` - Google 로그인 시작
+- `GET /auth/google/redirect` - Google OAuth 콜백 처리
+- `GET /auth/me` - 현재 인증된 사용자 정보 조회 (JWT 인증 필요)
 
 ## 개발 명령어
 
