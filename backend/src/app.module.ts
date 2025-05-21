@@ -14,6 +14,8 @@ import { AppService } from './app.service';
       database: 'shania_english_db',
       entities: [],
       synchronize: true, // 개발 환경에서만 true 권장
+      retryAttempts: 5,
+      retryDelay: 3000,
     }),
   ],
   controllers: [AppController],
