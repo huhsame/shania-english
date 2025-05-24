@@ -3,8 +3,20 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { User } from './entities/user.entity';
 import { ConfigModule } from '@nestjs/config';
+import { RepositoriesModule } from './repositories/repositories.module';
+import {
+  User,
+  Source,
+  Sentence,
+  Expression,
+  SentenceExpression,
+  DefaultExample,
+  UserExample,
+  UserBookmark,
+  GeneratedPdf,
+  PdfDownload
+} from './entities';
 
 @Module({
   imports: [
@@ -18,12 +30,24 @@ import { ConfigModule } from '@nestjs/config';
       username: process.env.DB_USERNAME || 'postgres',
       password: process.env.DB_PASSWORD || 'postgres',
       database: process.env.DB_DATABASE || 'shania_english_db',
-      entities: [User],
+      entities: [
+        User,
+        Source,
+        Sentence,
+        Expression,
+        SentenceExpression,
+        DefaultExample,
+        UserExample,
+        UserBookmark,
+        GeneratedPdf,
+        PdfDownload
+      ],
       synchronize: true, // 개발 환경에서만 true 권장
       retryAttempts: 5,
       retryDelay: 3000,
     }),
     AuthModule,
+    RepositoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
