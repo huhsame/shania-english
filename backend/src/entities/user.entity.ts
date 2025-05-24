@@ -3,7 +3,8 @@ import {
     PrimaryGeneratedColumn,
     Column,
     CreateDateColumn,
-    UpdateDateColumn
+    UpdateDateColumn,
+    DeleteDateColumn
 } from 'typeorm';
 
 @Entity('users')
@@ -26,9 +27,18 @@ export class User {
     @Column({ nullable: true })
     goodnote_mail: string;
 
+    @Column({ type: 'enum', enum: ['free', 'starter', 'pro', 'expert'], default: 'free' })
+    user_type: 'free' | 'starter' | 'pro' | 'expert';
+
+    @Column({ type: 'text', nullable: true })
+    personalization_info: string;
+
     @CreateDateColumn()
     createdAt: Date;
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @DeleteDateColumn()
+    deletedAt: Date;
 } 
