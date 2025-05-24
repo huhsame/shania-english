@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -67,5 +67,15 @@ export class UsersRepository {
             this.logger.error(`모든 사용자 조회 중 오류: ${error.message}`, error.stack);
             throw error;
         }
+    }
+
+    async updateGoodnoteMail(userId: string, goodnoteMail: string): Promise<User> {
+        const user = await this.usersRepository.findOne({ where: { id: userId } });
+        if (!user) {
+            throw new NotFoundException('사용자를 찾을 수 없습니다');
+        }
+        
+        user.goodnote_mail = goodnoteMail;
+        return this.usersRepository.save(user);
     }
 } 

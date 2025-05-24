@@ -23,6 +23,9 @@ export class User {
     @Column({ nullable: true })
     picture: string;
 
+    @Column({ nullable: true })
+    goodnote_mail: string;
+
     @CreateDateColumn()
     createdAt: Date;
 
