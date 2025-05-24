@@ -5,6 +5,8 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { RepositoriesModule } from './repositories/repositories.module';
+import { WebhookModule } from './webhook/webhook.module';
+import { UserModule } from './user/user.module';
 import {
   User,
   Source,
@@ -48,6 +50,8 @@ import {
     }),
     AuthModule,
     RepositoriesModule,
+    WebhookModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
