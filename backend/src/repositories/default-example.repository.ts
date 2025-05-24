@@ -16,7 +16,7 @@ export class DefaultExampleRepository {
     });
   }
 
-  async findById(id: string): Promise<DefaultExample> {
+  async findById(id: string): Promise<DefaultExample | null> {
     return this.defaultExampleRepository.findOne({
       where: { id },
       relations: ['expression']
@@ -30,21 +30,21 @@ export class DefaultExampleRepository {
     });
   }
 
-  async create(exampleData: Partial<DefaultExample>): Promise<DefaultExample> {
+  async create(exampleData: Partial<DefaultExample>): Promise<DefaultExample | null> {
     const example = this.defaultExampleRepository.create(exampleData);
     return this.defaultExampleRepository.save(example);
   }
 
-  async update(id: string, exampleData: Partial<DefaultExample>): Promise<DefaultExample> {
+  async update(id: string, exampleData: Partial<DefaultExample>): Promise<DefaultExample | null> {
     await this.defaultExampleRepository.update(id, exampleData);
     return this.findById(id);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string): Promise<void | null> {
     await this.defaultExampleRepository.delete(id);
   }
 
-  async updateTranslation(id: string, translation: string): Promise<DefaultExample> {
+  async updateTranslation(id: string, translation: string): Promise<DefaultExample | null> {
     await this.defaultExampleRepository.update(id, { korean_translation: translation });
     return this.findById(id);
   }

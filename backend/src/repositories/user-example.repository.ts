@@ -16,7 +16,7 @@ export class UserExampleRepository {
     });
   }
 
-  async findById(id: string): Promise<UserExample> {
+  async findById(id: string): Promise<UserExample | null> {
     return this.userExampleRepository.findOne({
       where: { id },
       relations: ['user', 'expression']
@@ -44,21 +44,21 @@ export class UserExampleRepository {
     });
   }
 
-  async create(exampleData: Partial<UserExample>): Promise<UserExample> {
+  async create(exampleData: Partial<UserExample>): Promise<UserExample | null> {
     const example = this.userExampleRepository.create(exampleData);
     return this.userExampleRepository.save(example);
   }
 
-  async update(id: string, exampleData: Partial<UserExample>): Promise<UserExample> {
+  async update(id: string, exampleData: Partial<UserExample>): Promise<UserExample | null> {
     await this.userExampleRepository.update(id, exampleData);
     return this.findById(id);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string): Promise<void | null> {
     await this.userExampleRepository.delete(id);
   }
 
-  async updateTranslation(id: string, translation: string): Promise<UserExample> {
+  async updateTranslation(id: string, translation: string): Promise<UserExample | null> {
     await this.userExampleRepository.update(id, { korean_translation: translation });
     return this.findById(id);
   }

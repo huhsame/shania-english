@@ -14,11 +14,11 @@ export class SourceRepository {
     return this.sourceRepository.find();
   }
 
-  async findById(id: string): Promise<Source> {
+  async findById(id: string): Promise<Source | null> {
     return this.sourceRepository.findOne({ where: { id } });
   }
 
-  async findByUrl(url: string): Promise<Source> {
+  async findByUrl(url: string): Promise<Source | null> {
     return this.sourceRepository.findOne({ where: { url } });
   }
 
@@ -27,7 +27,7 @@ export class SourceRepository {
     return this.sourceRepository.save(source);
   }
 
-  async update(id: string, sourceData: Partial<Source>): Promise<Source> {
+  async update(id: string, sourceData: Partial<Source>): Promise<Source | null> {
     await this.sourceRepository.update(id, sourceData);
     return this.findById(id);
   }
@@ -36,11 +36,11 @@ export class SourceRepository {
     await this.sourceRepository.delete(id);
   }
 
-  async findByContentType(contentType: string): Promise<Source[]> {
+  async findByContentType(contentType: 'text' | 'webpage' | 'youtube'): Promise<Source[]> {
     return this.sourceRepository.find({ where: { content_type: contentType } });
   }
 
-  async updateProcessedStatus(id: string, processedAt: Date): Promise<Source> {
+  async updateProcessedStatus(id: string, processedAt: Date): Promise<Source | null> {
     await this.sourceRepository.update(id, { processed_at: processedAt });
     return this.findById(id);
   }

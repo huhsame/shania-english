@@ -16,7 +16,7 @@ export class GeneratedPdfRepository {
     });
   }
 
-  async findById(id: string): Promise<GeneratedPdf> {
+  async findById(id: string): Promise<GeneratedPdf | null> {
     return this.generatedPdfRepository.findOne({
       where: { id },
       relations: ['source', 'user']
@@ -81,21 +81,21 @@ export class GeneratedPdfRepository {
     });
   }
 
-  async create(pdfData: Partial<GeneratedPdf>): Promise<GeneratedPdf> {
+  async create(pdfData: Partial<GeneratedPdf>): Promise<GeneratedPdf | null> {
     const pdf = this.generatedPdfRepository.create(pdfData);
     return this.generatedPdfRepository.save(pdf);
   }
 
-  async update(id: string, pdfData: Partial<GeneratedPdf>): Promise<GeneratedPdf> {
+  async update(id: string, pdfData: Partial<GeneratedPdf>): Promise<GeneratedPdf | null> {
     await this.generatedPdfRepository.update(id, pdfData);
     return this.findById(id);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string): Promise<void | null> {
     await this.generatedPdfRepository.delete(id);
   }
 
-  async updateGenerationStatus(id: string, status: GenerationStatus, generatedAt?: Date): Promise<GeneratedPdf> {
+  async updateGenerationStatus(id: string, status: GenerationStatus, generatedAt?: Date): Promise<GeneratedPdf | null> {
     const updateData: Partial<GeneratedPdf> = { generationStatus: status };
     
     if (status === GenerationStatus.COMPLETED && generatedAt) {

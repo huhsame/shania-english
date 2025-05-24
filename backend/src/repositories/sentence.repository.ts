@@ -14,7 +14,7 @@ export class SentenceRepository {
     return this.sentenceRepository.find();
   }
 
-  async findById(id: string): Promise<Sentence> {
+  async findById(id: string): Promise<Sentence | null> {
     return this.sentenceRepository.findOne({ 
       where: { id },
       relations: ['source']
@@ -28,21 +28,21 @@ export class SentenceRepository {
     });
   }
 
-  async create(sentenceData: Partial<Sentence>): Promise<Sentence> {
+  async create(sentenceData: Partial<Sentence>): Promise<Sentence | null> {
     const sentence = this.sentenceRepository.create(sentenceData);
     return this.sentenceRepository.save(sentence);
   }
 
-  async update(id: string, sentenceData: Partial<Sentence>): Promise<Sentence> {
+  async update(id: string, sentenceData: Partial<Sentence>): Promise<Sentence | null> {
     await this.sentenceRepository.update(id, sentenceData);
     return this.findById(id);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string): Promise<void | null> {
     await this.sentenceRepository.delete(id);
   }
 
-  async updateTranslation(id: string, translation: string): Promise<Sentence> {
+  async updateTranslation(id: string, translation: string): Promise<Sentence | null> {
     await this.sentenceRepository.update(id, { korean_translation: translation });
     return this.findById(id);
   }

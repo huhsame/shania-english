@@ -16,7 +16,7 @@ export class UserBookmarkRepository {
     });
   }
 
-  async findById(id: string): Promise<UserBookmark> {
+  async findById(id: string): Promise<UserBookmark | null> {
     return this.userBookmarkRepository.findOne({
       where: { id },
       relations: ['user', 'expression']
@@ -37,19 +37,19 @@ export class UserBookmarkRepository {
     });
   }
 
-  async findByUserIdAndExpressionId(userId: string, expressionId: string): Promise<UserBookmark> {
+  async findByUserIdAndExpressionId(userId: string, expressionId: string): Promise<UserBookmark | null> {
     return this.userBookmarkRepository.findOne({
       where: { userId, expressionId },
       relations: ['user', 'expression']
     });
   }
 
-  async create(bookmarkData: Partial<UserBookmark>): Promise<UserBookmark> {
+  async create(bookmarkData: Partial<UserBookmark>): Promise<UserBookmark | null> {
     const bookmark = this.userBookmarkRepository.create(bookmarkData);
     return this.userBookmarkRepository.save(bookmark);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string): Promise<void | null> {
     await this.userBookmarkRepository.delete(id);
   }
 
@@ -61,7 +61,7 @@ export class UserBookmarkRepository {
       return { isBookmarked: false };
     } else {
       const newBookmark = await this.create({ userId, expressionId });
-      return { isBookmarked: true, bookmark: newBookmark };
+      return { isBookmarked: true, bookmark: newBookmark || undefined };
     }
   }
 } 

@@ -16,7 +16,7 @@ export class SentenceExpressionRepository {
     });
   }
 
-  async findById(id: string): Promise<SentenceExpression> {
+  async findById(id: string): Promise<SentenceExpression | null> {
     return this.sentenceExpressionRepository.findOne({
       where: { id },
       relations: ['sentence', 'expression']
@@ -37,16 +37,16 @@ export class SentenceExpressionRepository {
     });
   }
 
-  async create(data: Partial<SentenceExpression>): Promise<SentenceExpression> {
+  async create(data: Partial<SentenceExpression>): Promise<SentenceExpression | null> {
     const sentenceExpression = this.sentenceExpressionRepository.create(data);
     return this.sentenceExpressionRepository.save(sentenceExpression);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string): Promise<void | null> {
     await this.sentenceExpressionRepository.delete(id);
   }
 
-  async findBySentenceIdAndExpressionId(sentenceId: string, expressionId: string): Promise<SentenceExpression> {
+  async findBySentenceIdAndExpressionId(sentenceId: string, expressionId: string): Promise<SentenceExpression | null> {
     return this.sentenceExpressionRepository.findOne({
       where: { sentenceId, expressionId },
       relations: ['sentence', 'expression']

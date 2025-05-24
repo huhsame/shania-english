@@ -16,7 +16,7 @@ export class PdfDownloadRepository {
     });
   }
 
-  async findById(id: string): Promise<PdfDownload> {
+  async findById(id: string): Promise<PdfDownload | null> {
     return this.pdfDownloadRepository.findOne({
       where: { id },
       relations: ['user', 'pdf']
@@ -44,12 +44,12 @@ export class PdfDownloadRepository {
     });
   }
 
-  async create(downloadData: Partial<PdfDownload>): Promise<PdfDownload> {
+  async create(downloadData: Partial<PdfDownload>): Promise<PdfDownload | null> {
     const download = this.pdfDownloadRepository.create(downloadData);
     return this.pdfDownloadRepository.save(download);
   }
 
-  async recordDownload(userId: string, pdfId: string, downloadType: DownloadType): Promise<PdfDownload> {
+  async recordDownload(userId: string, pdfId: string, downloadType: DownloadType): Promise<PdfDownload | null> {
     const download = this.pdfDownloadRepository.create({
       userId,
       pdfId,
