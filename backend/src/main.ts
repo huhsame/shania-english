@@ -4,6 +4,11 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Global prefix 설정 (auth는 제외)
+  app.setGlobalPrefix('api', {
+    exclude: ['auth', 'auth/google', 'auth/google/redirect', 'auth/me']
+  });
+
   // CORS 설정
   app.enableCors({
     origin: process.env.FRONTEND_URL,
