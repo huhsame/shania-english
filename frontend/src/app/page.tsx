@@ -161,6 +161,13 @@ export default function Home() {
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
+                    <Link href="/components" className={navigationMenuTriggerStyle()}>
+                      컴포넌트
+                    </Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <NavigationMenuLink asChild>
                     <Link href="#" className={navigationMenuTriggerStyle()}>
                       리소스
                     </Link>
