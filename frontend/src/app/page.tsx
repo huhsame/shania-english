@@ -1,17 +1,10 @@
 'use client';
 
-import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/auth/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -25,7 +18,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -35,10 +27,10 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
 import { CalendarIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import PersonalizationDialog from "@/components/PersonalizationDialog";
+import EmailSetupDialog from "@/components/EmailSetupDialog";
 
 export default function Home() {
   const { isAuthenticated, logout } = useAuth();
@@ -46,6 +38,13 @@ export default function Home() {
   const [userName, setUserName] = useState<string | null>(null);
   const [email, setEmail] = useState<string>('');
   const [isValidEmail, setIsValidEmail] = useState<boolean>(true);
+  
+  // 다이얼로그 상태 관리 추가
+  const [linkUrl, setLinkUrl] = useState<string>('');
+  const [showPersonalizationDialog, setShowPersonalizationDialog] = useState<boolean>(false);
+  const [showEmailDialog, setShowEmailDialog] = useState<boolean>(false);
+  const [personalizationInfo, setPersonalizationInfo] = useState<string>('');
+  
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
   useEffect(() => {
@@ -73,6 +72,14 @@ export default function Home() {
             logout(); // 토큰이 유효하지 않으면 로그아웃
           });
       }
+      
+      // 로그인 후 pending_link 확인
+      const pendingLink = localStorage.getItem('pending_link');
+      if (pendingLink) {
+        setLinkUrl(pendingLink);
+        setShowPersonalizationDialog(true);
+        localStorage.removeItem('pending_link');
+      }
     }
   }, [isAuthenticated, logout, apiUrl]);
 
@@ -88,15 +95,35 @@ export default function Home() {
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
-    setEmail(inputValue);
+    setLinkUrl(inputValue);
   };
 
   const handleStartWithEmail = () => {
-    if (email) {
-      // 입력된 링크 정보 저장 후 로그인 처리
-      localStorage.setItem('pending_link', email);
-      handleLogin();
+    if (linkUrl) {
+      if (isAuthenticated) {
+        // 이미 로그인된 경우 바로 개인화 다이얼로그 열기
+        setShowPersonalizationDialog(true);
+      } else {
+        // 로그인 후 개인화 다이얼로그 열기
+        localStorage.setItem('pending_link', linkUrl);
+        handleLogin();
+      }
     }
+  };
+
+  // 다이얼로그 핸들러 함수들
+  const handlePersonalizationNext = (personalization: string) => {
+    setPersonalizationInfo(personalization);
+    setShowPersonalizationDialog(false);
+    setShowEmailDialog(true);
+  };
+
+  const handlePersonalizationClose = () => {
+    setShowPersonalizationDialog(false);
+  };
+
+  const handleEmailDialogClose = () => {
+    setShowEmailDialog(false);
   };
 
   return (
@@ -286,7 +313,7 @@ export default function Home() {
                     type="text"
                     placeholder="학습할 유튜브나 웹페이지 링크를 입력하세요"
                     className="h-12 text-base flex-grow rounded-full sm:rounded-l-full sm:rounded-r-none px-4 focus:border-primary focus:ring-2 focus:ring-primary/30"
-                    value={email}
+                    value={linkUrl}
                     onChange={handleEmailChange}
                     onKeyDown={(e) => e.key === 'Enter' && handleStartWithEmail()}
                   />
@@ -295,7 +322,31 @@ export default function Home() {
                     variant="default"
                     size="lg"
                     className="rounded-full sm:rounded-r-full sm:rounded-l-none px-8 mt-2 sm:mt-0 h-12 text-base"
-                    disabled={!email}
+                    disabled={!linkUrl}
+                  >
+                    시작하기
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {isAuthenticated && (
+              <div className="mt-8 flex items-center justify-center max-w-3xl mx-auto px-4">
+                <div className="flex w-full flex-col sm:flex-row gap-2">
+                  <Input 
+                    type="text"
+                    placeholder="학습할 유튜브나 웹페이지 링크를 입력하세요"
+                    className="h-12 text-base flex-grow rounded-full sm:rounded-l-full sm:rounded-r-none px-4 focus:border-primary focus:ring-2 focus:ring-primary/30"
+                    value={linkUrl}
+                    onChange={handleEmailChange}
+                    onKeyDown={(e) => e.key === 'Enter' && handleStartWithEmail()}
+                  />
+                  <Button
+                    onClick={handleStartWithEmail}
+                    variant="default"
+                    size="lg"
+                    className="rounded-full sm:rounded-r-full sm:rounded-l-none px-8 mt-2 sm:mt-0 h-12 text-base"
+                    disabled={!linkUrl}
                   >
                     시작하기
                   </Button>
@@ -304,246 +355,22 @@ export default function Home() {
             )}
           </div>
           
-          {isAuthenticated && (
-            <Card className="mb-10 border-primary/20 shadow-md">
-              <CardHeader>
-                <CardTitle>환영합니다, {userName || '사용자'}님!</CardTitle>
-                <CardDescription>최근 학습 현황과 추천 과정을 확인하세요.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="p-4 bg-primary/5 rounded-md">
-                  <p className="text-foreground">지금 바로 학습을 시작해보세요!</p>
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button variant="outline">대시보드</Button>
-                <Button>학습 계속하기</Button>
-              </CardFooter>
-            </Card>
-          )}
-
-          {/* 탭 콘텐츠 */}
-          <Tabs defaultValue="features" className="mb-12">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="features">주요 기능</TabsTrigger>
-              <TabsTrigger value="courses">추천 코스</TabsTrigger>
-              <TabsTrigger value="testimonials">사용자 후기</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="features" className="mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>AI 기반 학습</CardTitle>
-                    <CardDescription>
-                      인공지능 기술을 활용한 맞춤형 학습
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p>AI가 사용자의 학습 패턴을 분석하여 최적화된 학습 경로를 제공합니다.</p>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle>실시간 피드백</CardTitle>
-                    <CardDescription>
-                      즉각적인 피드백으로 효과적인 학습
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p>발음, 문법, 어휘 사용에 대한 실시간 피드백으로 빠른 실력 향상을 경험하세요.</p>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle>다양한 학습 자료</CardTitle>
-                    <CardDescription>
-                      풍부한 컨텐츠로 재미있는 학습
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p>다양한 주제와 레벨의 학습 자료로 지루하지 않게 영어를 배울 수 있습니다.</p>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="courses" className="mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>초급 회화 마스터</CardTitle>
-                    <CardDescription>
-                      기초부터 탄탄하게 영어 회화 학습
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p>일상 생활에 필요한 기본적인 영어 표현과 문법을 학습합니다.</p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button variant="outline" className="w-full">자세히 보기</Button>
-                  </CardFooter>
-                </Card>
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle>비즈니스 영어</CardTitle>
-                    <CardDescription>
-                      직장에서 필요한 영어 표현 학습
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p>회의, 프레젠테이션, 이메일 작성 등 비즈니스 환경에 필요한 영어를 배웁니다.</p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button variant="outline" className="w-full">자세히 보기</Button>
-                  </CardFooter>
-                </Card>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="testimonials" className="mt-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage src="/testimonial-1.png" />
-                        <AvatarFallback>JK</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <CardTitle className="text-base">김지훈</CardTitle>
-                        <CardDescription>회사원, 32세</CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="italic">"Shania English 덕분에 회사에서 영어 미팅에 자신감을 갖게 되었습니다. 특히 비즈니스 영어 코스가 실무에 많은 도움이 되었어요."</p>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage src="/testimonial-2.png" />
-                        <AvatarFallback>SL</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <CardTitle className="text-base">이수민</CardTitle>
-                        <CardDescription>대학생, 24세</CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="italic">"AI 발음 피드백 기능이 정말 좋아요. 제가 잘못 발음하는 부분을 정확히 짚어주고 개선 방법도 알려줘서 발음이 많이 좋아졌어요."</p>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-          </Tabs>
-          
-          <Separator className="my-12" />
-          
-          {/* FAQ 섹션 */}
-          <div className="mb-12">
-            <h2 className="text-2xl font-semibold mb-6 text-center">자주 묻는 질문</h2>
-            <Accordion type="single" collapsible className="w-full max-w-3xl mx-auto">
-              <AccordionItem value="item-1">
-                <AccordionTrigger>Shania English는 어떤 서비스인가요?</AccordionTrigger>
-                <AccordionContent>
-                  Shania English는 AI 기술을 활용한 영어 학습 플랫폼입니다. 맞춤형 학습 경로, 실시간 피드백, 
-                  다양한 학습 자료를 통해 효과적인 영어 학습을 도와드립니다.
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-2">
-                <AccordionTrigger>어떻게 시작하나요?</AccordionTrigger>
-                <AccordionContent>
-                  Google 계정으로 간편하게 로그인하시면 바로 서비스를 이용하실 수 있습니다. 로그인 후에는 
-                  레벨 테스트를 통해 개인화된 학습 경험을 제공받을 수 있습니다.
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-3">
-                <AccordionTrigger>무료로 이용할 수 있나요?</AccordionTrigger>
-                <AccordionContent>
-                  네, 기본적인 기능은 무료로 제공됩니다. 기본 학습 과정, 커뮤니티 참여 등의 서비스를 무료로 이용하실 수 있습니다.
-                  추가적인 고급 기능은 향후 구독 서비스로 제공될 예정입니다.
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-4">
-                <AccordionTrigger>모바일에서도 사용할 수 있나요?</AccordionTrigger>
-                <AccordionContent>
-                  네, Shania English는 반응형 웹으로 설계되어 모바일, 태블릿, 데스크톱 등 다양한 기기에서 
-                  최적화된 환경으로 이용하실 수 있습니다.
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-          </div>
         </div>
       </main>
-      {/* 푸터 */}
-      <footer className="bg-muted py-8 border-t">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="font-semibold mb-3">Shania English</h3>
-              <p className="text-sm text-muted-foreground">
-                효과적인 영어 학습을 위한 최고의 온라인 플랫폼
-              </p>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-3">학습</h3>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="#" className="text-muted-foreground hover:text-foreground">코스 둘러보기</Link></li>
-                <li><Link href="#" className="text-muted-foreground hover:text-foreground">학습 가이드</Link></li>
-                <li><Link href="#" className="text-muted-foreground hover:text-foreground">자주 묻는 질문</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-3">회사 소개</h3>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="#" className="text-muted-foreground hover:text-foreground">소개</Link></li>
-                <li><Link href="#" className="text-muted-foreground hover:text-foreground">채용 정보</Link></li>
-                <li><Link href="#" className="text-muted-foreground hover:text-foreground">보도자료</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-3">문의</h3>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="#" className="text-muted-foreground hover:text-foreground">고객센터</Link></li>
-                <li><Link href="#" className="text-muted-foreground hover:text-foreground">이메일</Link></li>
-                <li><Link href="#" className="text-muted-foreground hover:text-foreground">제휴 문의</Link></li>
-              </ul>
-            </div>
-          </div>
-          <Separator className="my-6" />
-          <div className="flex flex-col md:flex-row justify-between items-center text-center md:text-left">
-            <p className="text-sm text-muted-foreground">© 2023 Shania English. All rights reserved.</p>
-            <div className="flex gap-4 mt-4 md:mt-0">
-              <Link
-                href="#"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-              </Link>
-              <Link
-                href="#"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-              </Link>
-              <Link
-                href="#"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      
+      {/* 다이얼로그들 */}
+      <PersonalizationDialog
+        open={showPersonalizationDialog}
+        onClose={handlePersonalizationClose}
+        onNext={handlePersonalizationNext}
+      />
+      
+      <EmailSetupDialog
+        open={showEmailDialog}
+        onClose={handleEmailDialogClose}
+        linkUrl={linkUrl}
+        personalizationInfo={personalizationInfo}
+      />
     </div>
   );
 }
